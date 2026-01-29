@@ -1,62 +1,43 @@
 const dotenv = require("dotenv");
-dotenv.config(); // ✅ FIRST
-const appRoute = require('./routes/index.js')
+dotenv.config();
 
 const express = require("express");
-const connectDB = require("./config/database.js");
-// const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const path = require("path");
 
+const appRoute = require("./routes/index.js");
+const connectDB = require("./config/database.js");
+
 const app = express();
 
-// middleware
+// ---------- Middleware ----------
 app.use(express.json());
-// app.use(cookieParser());
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: true, // ✅ allow your live frontend
   credentials: true
 }));
 
-
-// MUST be BEFORE routes
+// ---------- Static Files ----------
 app.use(
   "/images",
   express.static(path.join(__dirname, "../public/images"))
 );
 
+app.use(express.static("public"));
 
+// ---------- Routes ----------
+app.use("/app/v1", appRoute);
 
-app.use(express.static('public'));
+// ---------- PORT (HOSTINGER REQUIRED) ----------
+const PORT = process.env.PORT || 3000;
 
-app.use("/app/v1",appRoute);
+// ---------- Start Server FIRST ----------
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
 
-const PORT = process.env.PORT;
-
+// ---------- DB Connection (NON-BLOCKING) ----------
 connectDB.connectToDatabase()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("❌ MySQL connection error:", err);
-    process.exit(1);
-  });
-
-
-
- // ✅ MySQL connection check
-// connectDB
-//   .query("SELECT 1")
-//   .then(() => {
-//     console.log("✅ MySQL Database connection established...");
-//     app.listen(PORT, () => {
-//       console.log(`🚀 Server running on port ${PORT}`);
-//     });
-//   })
-//   .catch((err) => {
-//     console.error("❌ Database connection failed:", err);
-//     process.exit(1);
- //);
+  .then(() => console.log("✅ MySQL connected"))
+  .catch(err => console.error("❌ MySQL error:", err));
