@@ -32,7 +32,7 @@ app.use(express.static('public'));
 
 app.use("/app/v1",appRoute);
 
-const PORT = process.env.PORT || 9090;
+const PORT = process.env.PORT;
 
 connectDB.connectToDatabase()
   .then(() => {
